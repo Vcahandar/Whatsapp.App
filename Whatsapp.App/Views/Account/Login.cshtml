@@ -1,0 +1,12 @@
+﻿@model Whatsapp.App.ViewModels.LoginDto
+@{
+    ViewData["Title"] = "Login";
+}
+
+<h1>Login</h1>
+
+<form method="post"> 
+    <input asp-for="UserName" />
+    <input asp-for="Password" />
+    <button type="submit">Login</button>
+</form>

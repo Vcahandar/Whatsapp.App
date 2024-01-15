@@ -1,0 +1,76 @@
+﻿@model List<AppUser>
+@{
+    ViewData["Title"] = "Home Page";
+}
+<div class="container">
+    <div class="row p-1">
+        <div class="col-1">Message</div>
+        <div class="col-5"><input type="text" class="w-100" id="messageInput" /></div>
+    </div>
+    <div class="row p-1">
+        <div class="col-6 text-end">
+            <input type="button" id="sendButton" value="Send Message" />
+        </div>
+    </div>
+    <div class="row p-1">
+        <div class="col-6">
+            <hr />
+        </div>
+    </div>
+    <div class="row p-1">
+        <div class="col-6">
+            <ul id="messagesList">
+
+            </ul>
+        </div>
+    </div>
+
+    <ul style="position:fixed;right:20px;">
+        @foreach (var item in Model)
+        {
+            <li class="user" data-id="@item.Id" style="cursor:pointer; color:@(item.ConnectiionId!=null?"green":"red")">@item.UserName</li>
+        }
+    </ul>
+</div>
+
+<script src="~/lib/microsoft/signalr/dist/browser/signalr.js"></script>
+
+<script>
+    const connection = new signalR.HubConnectionBuilder().withUrl("/chatHub").build();
+    connection.start()
+    const sendBtn = document.getElementById("sendButton");
+
+    sendBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        const messageTag = document.getElementById("messageInput");
+        const message = messageTag.value;
+
+        connection.invoke("SendMessage", message).catch(function (err) {
+            return console.error(err.toString());
+        });
+    })
+
+    connection.on("ReceiveMessage", function (message) {
+        const messageList = document.getElementById("messagesList")
+        messageList.innerHTML+=`<li>${message}</li>`
+    });
+
+    connection.on("login", function (userId) {
+        const users = document.querySelectorAll(".user")
+        users.forEach(user => {
+            const id=user.getAttribute("data-id")
+            if (id == userId) {
+                user.style.color="green"
+            }
+        })
+    });
+    connection.on("logout", function (userId) {
+        const users = document.querySelectorAll(".user")
+        users.forEach(user => {
+            const id = user.getAttribute("data-id")
+            if (id == userId) {
+                user.style.color = "red"
+            }
+        })
+    });
+</script>
